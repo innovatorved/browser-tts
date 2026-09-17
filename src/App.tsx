@@ -292,7 +292,7 @@ export default function App() {
               </div>
               <div>
                 <h1 className="text-lg font-semibold text-gh-fg dark:text-ghd-fg">
-                  Native Browser Speech Engine
+                  Browser TTS
                 </h1>
                 <p className="text-xs text-gh-fg-muted dark:text-ghd-fg-muted">
                   Powered by Web Speech API
@@ -303,7 +303,7 @@ export default function App() {
             {/* Actions */}
             <div className="flex items-center gap-2">
               <a
-                href="https://github.com/innovatorved/text-to-speech-using-WebSpeechAPI"
+                href="https://github.com/innovatorved/browser-tts"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-gh text-gh-fg-muted dark:text-ghd-fg-muted hover:text-gh-fg dark:hover:text-ghd-fg hover:bg-gh-canvas-inset dark:hover:bg-ghd-border-muted transition-colors"
@@ -551,7 +551,7 @@ export default function App() {
             <p>Built with React & Web Speech API</p>
             <div className="flex items-center gap-4">
               <a
-                href="https://github.com/innovatorved/text-to-speech-using-WebSpeechAPI"
+                href="https://github.com/innovatorved/browser-tts"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-gh-accent dark:hover:text-ghd-accent transition-colors"

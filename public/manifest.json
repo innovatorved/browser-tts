@@ -1,6 +1,6 @@
 {
-  "short_name": "Native Speech",
-  "name": "Native Browser Speech Engine",
+  "short_name": "Browser TTS",
+  "name": "Browser TTS",
   "icons": [
     {
       "src": "favicon.ico",

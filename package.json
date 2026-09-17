@@ -1,5 +1,5 @@
 {
-  "name": "native-browser-speech-engine",
+  "name": "browser-tts",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -22,7 +22,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "cf-deploy": "bunx wrangler pages deploy dist --project-name=native-browser-speech-engine --branch=main"
+    "cf-deploy": "bunx wrangler pages deploy dist --project-name=browser-tts --branch=main"
   },
   "browserslist": {
     "production": [

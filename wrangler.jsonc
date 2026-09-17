@@ -1,5 +1,5 @@
 {
-    "name": "native-browser-speech-engine",
+    "name": "browser-tts",
     "compatibility_date": "2025-12-13",
     "pages_build_output_dir": "dist"
 }
