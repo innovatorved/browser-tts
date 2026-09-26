@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 
 type Theme = 'light' | 'dark'
 
@@ -30,77 +30,24 @@ function normalizeSpaces(text: string): string {
   return text.replace(/\s+/g, ' ').trim()
 }
 
-// Icon components
-const SunIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-  </svg>
-)
-
-const MoonIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-  </svg>
-)
-
-const SpeakerIcon = ({ isSpeaking }: { isSpeaking: boolean }) => (
-  <svg className={`w-5 h-5 ${isSpeaking ? 'animate-speaking' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-  </svg>
-)
-
-const StopIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-  </svg>
-)
-
-const CopyIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-  </svg>
-)
-
-const TrashIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-  </svg>
-)
-
-const CheckIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-)
-
-const GithubIcon = () => (
-  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
-  </svg>
-)
-
-const SettingsIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
-
 export default function App() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const activeSpeechBaseOffsetRef = useRef<number>(0)
   const priorSelectionRef = useRef<{ start: number; end: number } | null>(null)
 
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('theme')
-    return saved === 'dark' ? 'dark' : 'light'
+    const saved = localStorage.getItem('sd-theme') || localStorage.getItem('theme')
+    if (saved === 'dark' || saved === 'light') return saved
+    return typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
   })
 
-  const [text, setText] = useState<string>('')
+  const [text, setText] = useState<string>(
+    () => localStorage.getItem('tts_saved_text') || 'System design is the process of defining the architecture, interfaces, and data for a system that satisfies specific requirements.'
+  )
   const [rate, setRate] = useState<number>(() => getInitialNumber('rate', 1))
   const [pitch, setPitch] = useState<number>(() => getInitialNumber('pitch', 1))
   const [copied, setCopied] = useState(false)
+  const [selectedChars, setSelectedChars] = useState(0)
 
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(() => localStorage.getItem('voiceId') ?? '')
@@ -108,10 +55,22 @@ export default function App() {
 
   const synthAvailable = typeof window !== 'undefined' && 'speechSynthesis' in window
 
+  // Sync theme with HTML data-theme and class
   useEffect(() => {
+    localStorage.setItem('sd-theme', theme)
     localStorage.setItem('theme', theme)
+    document.documentElement.setAttribute('data-theme', theme)
     document.documentElement.classList.toggle('dark', theme === 'dark')
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) {
+      meta.setAttribute('content', theme === 'dark' ? '#111213' : '#fbfbfb')
+    }
   }, [theme])
+
+  // Save text to localStorage
+  useEffect(() => {
+    localStorage.setItem('tts_saved_text', text)
+  }, [text])
 
   useEffect(() => {
     localStorage.setItem('rate', String(rate))
@@ -121,6 +80,7 @@ export default function App() {
     localStorage.setItem('pitch', String(pitch))
   }, [pitch])
 
+  // Load available speech voices
   useEffect(() => {
     if (!synthAvailable) return
 
@@ -130,12 +90,17 @@ export default function App() {
       const next = synth.getVoices()
       setVoices(next)
 
-      if (!selectedVoiceId && next.length > 0) {
-        const english = next.find((v) => v.lang?.toLowerCase().startsWith('en'))
-        const fallback = english ?? next[0]
-        const id = fallback.voiceURI || fallback.name
-        setSelectedVoiceId(id)
-        localStorage.setItem('voiceId', id)
+      if (next.length > 0) {
+        const stored = localStorage.getItem('voiceId')
+        const voiceExists = stored && next.some((v) => (v.voiceURI || v.name) === stored)
+
+        if (!voiceExists) {
+          const english = next.find((v) => v.lang?.toLowerCase().startsWith('en'))
+          const fallback = english ?? next[0]
+          const id = fallback.voiceURI || fallback.name
+          setSelectedVoiceId(id)
+          localStorage.setItem('voiceId', id)
+        }
       }
     }
 
@@ -146,11 +111,12 @@ export default function App() {
       synth.removeEventListener('voiceschanged', loadVoices)
       synth.cancel()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [synthAvailable])
 
   useEffect(() => {
-    localStorage.setItem('voiceId', selectedVoiceId)
+    if (selectedVoiceId) {
+      localStorage.setItem('voiceId', selectedVoiceId)
+    }
   }, [selectedVoiceId])
 
   const selectedVoice = useMemo(() => {
@@ -161,7 +127,7 @@ export default function App() {
   const stats = useMemo(() => {
     const words = countWords(text)
     const characters = text.length
-    const minutes = words === 0 ? 0 : Math.max(0.1, words / 200)
+    const minutes = words === 0 ? 0 : Math.max(0.1, words / 160)
     return { words, characters, minutes }
   }, [text])
 
@@ -181,9 +147,7 @@ export default function App() {
   }
 
   const getWordRangeFromIndex = (fullText: string, index: number): { start: number; end: number } | null => {
-    if (!fullText) return null
-    if (index < 0) return null
-    if (index >= fullText.length) return null
+    if (!fullText || index < 0 || index >= fullText.length) return null
 
     let start = index
     while (start < fullText.length && /\s/.test(fullText[start])) start += 1
@@ -195,7 +159,7 @@ export default function App() {
     return { start, end }
   }
 
-  const stop = () => {
+  const stop = useCallback(() => {
     if (!synthAvailable) return
     window.speechSynthesis.cancel()
     setIsSpeaking(false)
@@ -205,9 +169,9 @@ export default function App() {
     if (el && prior) {
       el.setSelectionRange(prior.start, prior.end)
     }
-  }
+  }, [synthAvailable])
 
-  const speak = () => {
+  const speak = useCallback(() => {
     if (!synthAvailable) return
 
     if (isSpeaking) {
@@ -271,303 +235,547 @@ export default function App() {
     }
 
     synth.speak(utterance)
-  }
+  }, [synthAvailable, isSpeaking, text, selectedVoice, rate, pitch, stop])
+
+  // Keyboard shortcut: Cmd/Ctrl + Enter to trigger speak/stop, Esc to cancel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault()
+        if (isSpeaking) {
+          stop()
+        } else {
+          speak()
+        }
+      } else if (e.key === 'Escape' && isSpeaking) {
+        e.preventDefault()
+        stop()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [speak, stop, isSpeaking])
 
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(text)
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setTimeout(() => setCopied(false), 1800)
+  }
+
+  const handleSelectionChange = () => {
+    const el = textareaRef.current
+    if (el) {
+      const len = Math.abs(el.selectionEnd - el.selectionStart)
+      setSelectedChars(len)
+    }
+  }
+
+  const resetSettings = () => {
+    setRate(1)
+    setPitch(1)
   }
 
   return (
-    <div className="min-h-dvh bg-[#f6f8fa] dark:bg-[#0d1117]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-gh-border dark:border-ghd-border bg-gh-canvas/80 dark:bg-ghd-canvas-subtle/80 glass">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo & Title */}
+    <div className="min-h-screen flex flex-col bg-bg text-fg">
+      {/* ── Top Bar (Design System Match) ────────────────────── */}
+      <header className="sticky top-0 z-40 h-[52px] glass-topbar border-b border-border flex items-center px-4 sm:px-6 gap-3">
+        <div className="flex items-center gap-2.5 flex-shrink-0 select-none">
+          <div className="w-6 h-6 rounded-[var(--r-md)] bg-surface border border-border-strong flex items-center justify-center font-mono font-bold text-[11px] text-accent shadow-sm">
+            TTS
+          </div>
+          <span className="text-[13px] font-semibold tracking-tight text-fg">
+            Browser TTS
+          </span>
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-fg-faint bg-chip-bg border border-border rounded-[var(--r-sm)] px-1.5 py-0.5">
+            Web Speech
+          </span>
+        </div>
+
+        {/* Engine status indicator */}
+        <div className="hidden md:flex items-center gap-2 ml-4">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-[var(--r-full)] bg-chip-bg border border-border text-[11px] text-fg-muted font-mono">
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                isSpeaking
+                  ? 'bg-success animate-ping'
+                  : synthAvailable
+                  ? 'bg-success'
+                  : 'bg-error'
+              }`}
+            />
+            <span>
+              {isSpeaking
+                ? 'Synthesizing voice…'
+                : synthAvailable
+                ? `${voices.length} voices ready`
+                : 'API unavailable'}
+            </span>
+          </div>
+        </div>
+
+        {/* Topbar Actions */}
+        <div className="flex items-center gap-1.5 ml-auto">
+          {/* Keyboard shortcut hint */}
+          <div className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-fg-faint px-2 py-1 bg-chip-bg border border-border rounded-[var(--r-md)]">
+            <kbd className="text-[10px] font-semibold">⌘↵</kbd>
+            <span>Speak</span>
+          </div>
+
+          {/* GitHub Link */}
+          <a
+            href="https://github.com/innovatorved/browser-tts"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-8 h-8 rounded-[var(--r-md)] text-fg-muted hover:text-fg hover:bg-hover-bg flex items-center justify-center transition-colors"
+            title="GitHub Repository"
+            aria-label="GitHub Repository"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+          </a>
+
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            className="w-8 h-8 rounded-[var(--r-md)] text-fg-muted hover:text-fg hover:bg-hover-bg flex items-center justify-center transition-colors"
+            onClick={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5" />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </header>
+
+      {/* ── Main Workspace ────────────────────────────────────── */}
+      <main className="flex-1 max-w-[860px] w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        {/* Unsupported Warning Callout */}
+        {!synthAvailable && (
+          <div className="rounded-[var(--r-md)] border border-warning/40 bg-warning-muted/30 p-4 text-sm text-warning flex items-start gap-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-shrink-0 mt-0.5">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <div>
+              <p className="font-semibold">Speech Synthesis Unsupported</p>
+              <p className="text-xs text-fg-muted mt-0.5">
+                The Web Speech API is not enabled or available in your current browser session. Please open this app in Chrome, Safari, or Edge.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Primary Text Card ───────────────────────────────── */}
+        <section className="bg-surface border border-border rounded-[var(--r-xl)] shadow-card overflow-hidden transition-all duration-200">
+          {/* Card Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:px-5 border-b border-border bg-bg-alt/40">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-gh-lg bg-gradient-to-br from-gh-accent to-purple-500 text-white shadow-gh">
-                <SpeakerIcon isSpeaking={false} />
+              <div
+                className={`w-8 h-8 rounded-[var(--r-md)] border flex items-center justify-center transition-all ${
+                  isSpeaking
+                    ? 'border-accent bg-accent-muted text-accent'
+                    : 'border-border bg-surface text-fg-muted'
+                }`}
+              >
+                {isSpeaking ? (
+                  <div className="flex items-end gap-[2px] h-3.5 px-0.5">
+                    <span className="eq-bar" />
+                    <span className="eq-bar" />
+                    <span className="eq-bar" />
+                    <span className="eq-bar" />
+                  </div>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                  </svg>
+                )}
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-gh-fg dark:text-ghd-fg">
-                  Browser TTS
-                </h1>
-                <p className="text-xs text-gh-fg-muted dark:text-ghd-fg-muted">
-                  Powered by Web Speech API
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[14px] font-semibold text-fg tracking-tight">
+                    Speech Workspace
+                  </h2>
+                  {selectedChars > 0 && (
+                    <span className="badge badge--accent text-[10px]">
+                      Selection Active ({selectedChars} chars)
+                    </span>
+                  )}
+                </div>
+                <p className="text-[12px] text-fg-muted">
+                  {selectedChars > 0
+                    ? 'Only the highlighted segment will be voiced'
+                    : 'Type or paste text to vocalize'}
                 </p>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              <a
-                href="https://github.com/innovatorved/browser-tts"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-gh text-gh-fg-muted dark:text-ghd-fg-muted hover:text-gh-fg dark:hover:text-ghd-fg hover:bg-gh-canvas-inset dark:hover:bg-ghd-border-muted transition-colors"
-                title="View on GitHub"
-              >
-                <GithubIcon />
-              </a>
+            {/* Quick Actions & Play Button */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Speak / Stop Button */}
               <button
                 type="button"
-                className="p-2 rounded-gh text-gh-fg-muted dark:text-ghd-fg-muted hover:text-gh-fg dark:hover:text-ghd-fg hover:bg-gh-canvas-inset dark:hover:bg-ghd-border-muted transition-colors"
-                onClick={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}
-                title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+                className={`btn btn--sm font-medium transition-all ${
+                  isSpeaking
+                    ? 'btn--danger text-white'
+                    : 'btn--primary'
+                } disabled:opacity-40 disabled:cursor-not-allowed`}
+                onClick={speak}
+                disabled={!synthAvailable || !text.trim()}
+                title={isSpeaking ? 'Stop speaking (Esc)' : 'Speak text (⌘ + Enter)'}
               >
-                {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+                {isSpeaking ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="5" y="5" width="14" height="14" rx="2" />
+                    </svg>
+                    <span>Stop</span>
+                  </>
+                ) : (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    <span>Speak</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
-        </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="mx-auto max-w-4xl px-4 sm:px-6 py-6 sm:py-8">
-        <div className="grid gap-6">
-          {/* Text Input Section */}
-          <section className="rounded-gh-lg border border-gh-border dark:border-ghd-border bg-gh-canvas dark:bg-ghd-canvas-subtle shadow-gh dark:shadow-gh-dark animate-fade-in">
-            {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border-b border-gh-border-subtle dark:border-ghd-border-muted">
-              <div className="flex items-center gap-3">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-gh ${isSpeaking ? 'bg-gh-success-subtle dark:bg-ghd-success-subtle' : 'bg-gh-accent-subtle dark:bg-ghd-accent-subtle'}`}>
-                  <SpeakerIcon isSpeaking={isSpeaking} />
-                </div>
-                <div>
-                  <h2 className="text-base font-semibold text-gh-fg dark:text-ghd-fg">
-                    Your Text
-                  </h2>
-                  <p className="text-xs text-gh-fg-muted dark:text-ghd-fg-muted">
-                    Select a portion to speak just that selection
-                  </p>
-                </div>
+          {/* Textarea */}
+          <div className="p-4 sm:p-5">
+            <textarea
+              ref={textareaRef}
+              rows={9}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onSelect={handleSelectionChange}
+              onKeyUp={handleSelectionChange}
+              onMouseUp={handleSelectionChange}
+              placeholder="Enter text here or paste documents to generate clear synthetic speech…"
+              className="w-full bg-bg-alt/70 border border-border text-fg rounded-[var(--r-lg)] p-4 text-[13.5px] leading-relaxed resize-y outline-none transition-all placeholder:text-fg-faint font-sans focus:border-accent"
+              spellCheck={false}
+            />
+          </div>
+
+          {/* Status & Transformation Bar */}
+          <div className="px-4 sm:px-5 pb-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-2.5 rounded-[var(--r-lg)] bg-bg-alt border border-border">
+              {/* Metric Badges */}
+              <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+                <span className="badge badge--chip">
+                  <span className="font-semibold text-fg">{stats.words}</span> words
+                </span>
+                <span className="badge badge--chip">
+                  <span className="font-semibold text-fg">{stats.characters}</span> chars
+                </span>
+                <span className="badge badge--chip">
+                  <span className="font-semibold text-accent">~{stats.minutes.toFixed(1)}</span> min read
+                </span>
               </div>
 
-              {/* Primary Actions */}
-              <div className="flex gap-2">
+              {/* Text Operations */}
+              <div className="flex flex-wrap items-center gap-1">
                 <button
                   type="button"
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-gh font-medium text-sm transition-all ${isSpeaking
-                    ? 'bg-gh-danger hover:bg-gh-danger-emphasis text-white shadow-gh'
-                    : 'bg-gh-accent hover:bg-gh-accent-emphasis text-white shadow-gh'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  onClick={speak}
-                  disabled={!synthAvailable}
+                  className="btn btn--ghost btn--sm text-[11px] font-mono px-2"
+                  onClick={() => setText((t) => t.toUpperCase())}
+                  title="Transform to UPPERCASE"
                 >
-                  {isSpeaking ? (
+                  UPPER
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm text-[11px] font-mono px-2"
+                  onClick={() => setText((t) => t.toLowerCase())}
+                  title="Transform to lowercase"
+                >
+                  lower
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm text-[11px] font-mono px-2"
+                  onClick={() => setText((t) => toTitleCase(t))}
+                  title="Transform to Title Case"
+                >
+                  Title
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm text-[11px] font-mono px-2"
+                  onClick={() => setText((t) => normalizeSpaces(t))}
+                  title="Trim unnecessary whitespaces"
+                >
+                  Trim
+                </button>
+
+                <div className="w-[1px] h-4 bg-border mx-1" />
+
+                <button
+                  type="button"
+                  className="btn btn--secondary btn--sm text-[11px] px-2.5 gap-1.5"
+                  onClick={copyToClipboard}
+                  title="Copy text to clipboard"
+                >
+                  {copied ? (
                     <>
-                      <StopIcon />
-                      <span>Stop</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-success">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <span className="text-success font-medium">Copied</span>
                     </>
                   ) : (
                     <>
-                      <SpeakerIcon isSpeaking={false} />
-                      <span>Speak</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                      </svg>
+                      <span>Copy</span>
                     </>
                   )}
                 </button>
+
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm text-[11px] text-error hover:text-error hover:bg-error-muted px-2 gap-1"
+                  onClick={() => {
+                    setText('')
+                    setSelectedChars(0)
+                  }}
+                  title="Clear text buffer"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  </svg>
+                  <span>Clear</span>
+                </button>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Warning Banner */}
-            {!synthAvailable && (
-              <div className="mx-4 mt-4 rounded-gh border border-yellow-400/50 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-600/30 px-4 py-3 text-sm text-yellow-800 dark:text-yellow-200">
-                <strong>Note:</strong> Speech synthesis isn't available in this browser.
-              </div>
-            )}
-
-            {/* Textarea */}
-            <div className="p-4">
-              <textarea
-                ref={textareaRef}
-                className="w-full resize-y rounded-gh border border-gh-border dark:border-ghd-border bg-gh-canvas dark:bg-ghd-canvas p-4 text-sm leading-relaxed text-gh-fg dark:text-ghd-fg placeholder:text-gh-fg-subtle dark:placeholder:text-ghd-fg-subtle outline-none transition-all"
-                rows={8}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Type or paste your text here to convert it to speech..."
-              />
-            </div>
-
-            {/* Stats & Tools Bar */}
-            <div className="px-4 pb-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 rounded-gh bg-gh-canvas-subtle dark:bg-ghd-canvas-inset border border-gh-border-subtle dark:border-ghd-border-muted">
-                {/* Stats */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gh-accent-subtle dark:bg-ghd-accent-subtle text-gh-accent dark:text-ghd-accent border border-gh-accent/20 dark:border-ghd-accent/30">
-                    {stats.words} words
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gh-canvas-inset dark:bg-ghd-border-muted text-gh-fg-muted dark:text-ghd-fg-muted border border-gh-border dark:border-ghd-border">
-                    {stats.characters} chars
-                  </span>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gh-canvas-inset dark:bg-ghd-border-muted text-gh-fg-muted dark:text-ghd-fg-muted border border-gh-border dark:border-ghd-border">
-                    {stats.minutes.toFixed(1)} min read
-                  </span>
-                </div>
-
-                {/* Text Tools */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <button
-                    type="button"
-                    className="px-2.5 py-1.5 rounded-gh text-xs font-medium text-gh-fg-muted dark:text-ghd-fg-muted hover:text-gh-fg dark:hover:text-ghd-fg hover:bg-gh-canvas dark:hover:bg-ghd-border-muted border border-transparent hover:border-gh-border dark:hover:border-ghd-border transition-all"
-                    onClick={() => setText((t) => t.toUpperCase())}
-                  >
-                    UPPER
-                  </button>
-                  <button
-                    type="button"
-                    className="px-2.5 py-1.5 rounded-gh text-xs font-medium text-gh-fg-muted dark:text-ghd-fg-muted hover:text-gh-fg dark:hover:text-ghd-fg hover:bg-gh-canvas dark:hover:bg-ghd-border-muted border border-transparent hover:border-gh-border dark:hover:border-ghd-border transition-all"
-                    onClick={() => setText((t) => t.toLowerCase())}
-                  >
-                    lower
-                  </button>
-                  <button
-                    type="button"
-                    className="px-2.5 py-1.5 rounded-gh text-xs font-medium text-gh-fg-muted dark:text-ghd-fg-muted hover:text-gh-fg dark:hover:text-ghd-fg hover:bg-gh-canvas dark:hover:bg-ghd-border-muted border border-transparent hover:border-gh-border dark:hover:border-ghd-border transition-all"
-                    onClick={() => setText((t) => toTitleCase(t))}
-                  >
-                    Title
-                  </button>
-                  <button
-                    type="button"
-                    className="px-2.5 py-1.5 rounded-gh text-xs font-medium text-gh-fg-muted dark:text-ghd-fg-muted hover:text-gh-fg dark:hover:text-ghd-fg hover:bg-gh-canvas dark:hover:bg-ghd-border-muted border border-transparent hover:border-gh-border dark:hover:border-ghd-border transition-all"
-                    onClick={() => setText((t) => normalizeSpaces(t))}
-                  >
-                    Trim
-                  </button>
-                  <div className="w-px h-4 bg-gh-border dark:bg-ghd-border mx-1" />
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-gh text-xs font-medium text-gh-fg-muted dark:text-ghd-fg-muted hover:text-gh-accent dark:hover:text-ghd-accent hover:bg-gh-accent-subtle dark:hover:bg-ghd-accent-subtle border border-transparent hover:border-gh-accent/30 dark:hover:border-ghd-accent/30 transition-all"
-                    onClick={copyToClipboard}
-                  >
-                    {copied ? <CheckIcon /> : <CopyIcon />}
-                    <span>{copied ? 'Copied!' : 'Copy'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-gh text-xs font-medium text-gh-fg-muted dark:text-ghd-fg-muted hover:text-gh-danger dark:hover:text-ghd-danger hover:bg-gh-danger-subtle dark:hover:bg-ghd-danger-subtle border border-transparent hover:border-gh-danger/30 dark:hover:border-ghd-danger/30 transition-all"
-                    onClick={() => setText('')}
-                  >
-                    <TrashIcon />
-                    <span>Clear</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Speech Settings Section */}
-          <section className="rounded-gh-lg border border-gh-border dark:border-ghd-border bg-gh-canvas dark:bg-ghd-canvas-subtle shadow-gh dark:shadow-gh-dark animate-fade-in">
-            <div className="p-4 border-b border-gh-border-subtle dark:border-ghd-border-muted">
-              <h2 className="text-base font-semibold text-gh-fg dark:text-ghd-fg flex items-center gap-2">
-                <span className="text-gh-fg-muted dark:text-ghd-fg-muted">
-                  <SettingsIcon />
-                </span>
-                Speech Settings
+        {/* ── Speech Engine Parameters Card ───────────────────── */}
+        <section className="bg-surface border border-border rounded-[var(--r-xl)] shadow-card overflow-hidden">
+          {/* Card Header */}
+          <div className="flex items-center justify-between p-4 sm:px-5 border-b border-border bg-bg-alt/40">
+            <div className="flex items-center gap-2.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-fg-muted">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              <h2 className="text-[14px] font-semibold text-fg tracking-tight">
+                Engine Parameters
               </h2>
             </div>
 
-            <div className="p-4 grid gap-5">
-              {/* Voice Selector */}
-              <label className="grid gap-2">
-                <span className="text-sm font-medium text-gh-fg dark:text-ghd-fg">Voice</span>
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm text-[11px] font-mono text-fg-muted hover:text-fg"
+              onClick={resetSettings}
+              title="Reset rate and pitch to defaults"
+            >
+              Reset to 1.0x
+            </button>
+          </div>
+
+          <div className="p-4 sm:p-5 space-y-6">
+            {/* Voice Model Select */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="voice-select" className="text-[12px] font-medium text-fg-muted uppercase tracking-wider font-mono">
+                  Voice Model
+                </label>
+                <span className="badge badge--chip font-mono text-[10px]">
+                  {voices.length} synthesized profiles
+                </span>
+              </div>
+
+              <div className="relative">
                 <select
-                  className="w-full rounded-gh border border-gh-border dark:border-ghd-border bg-gh-canvas dark:bg-ghd-canvas px-3 py-2.5 text-sm text-gh-fg dark:text-ghd-fg outline-none transition-all hover:border-gh-border-muted dark:hover:border-ghd-border-subtle cursor-pointer"
+                  id="voice-select"
+                  className="w-full bg-bg-alt border border-border text-fg rounded-[var(--r-md)] px-3 py-2 text-[13px] outline-none transition-all hover:border-border-strong focus:border-accent cursor-pointer"
                   value={selectedVoiceId}
                   onChange={(e) => setSelectedVoiceId(e.target.value)}
-                  disabled={!synthAvailable}
+                  disabled={!synthAvailable || voices.length === 0}
                 >
-                  {voices.length === 0 ? <option value="">Loading voices…</option> : null}
-                  {voices.map((v) => {
-                    const id = v.voiceURI || v.name
-                    const label = `${v.name} (${v.lang})`
-                    return (
-                      <option key={id} value={id}>
-                        {label}
-                      </option>
-                    )
-                  })}
+                  {voices.length === 0 ? (
+                    <option value="">Querying system voice engines…</option>
+                  ) : (
+                    voices.map((v) => {
+                      const id = v.voiceURI || v.name
+                      const isDefault = v.default ? ' ★' : ''
+                      return (
+                        <option key={id} value={id}>
+                          {v.name} [{v.lang}]{isDefault}
+                        </option>
+                      )
+                    })
+                  )}
                 </select>
-              </label>
+              </div>
 
-              {/* Rate Slider */}
-              <label className="grid gap-3">
+              {selectedVoice && (
+                <div className="flex items-center gap-2 text-[11px] font-mono text-fg-faint pt-1">
+                  <span>Language: {selectedVoice.lang}</span>
+                  <span>•</span>
+                  <span>URI: {selectedVoice.voiceURI || selectedVoice.name}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Precision Range Sliders (Grid) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-border-subtle">
+              {/* Rate */}
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gh-fg dark:text-ghd-fg">Rate</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gh-accent-subtle dark:bg-ghd-accent-subtle text-gh-accent dark:text-ghd-accent">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[12px] font-medium text-fg uppercase tracking-wider font-mono">
+                      Rate / Speed
+                    </span>
+                  </div>
+                  <span className="badge badge--accent font-mono text-[11px]">
                     {rate.toFixed(1)}x
                   </span>
                 </div>
+
                 <input
                   type="range"
                   min={0.5}
-                  max={2}
+                  max={2.0}
                   step={0.1}
                   value={rate}
                   onChange={(e) => setRate(Number(e.target.value))}
                   disabled={!synthAvailable}
+                  aria-label="Speech rate"
                 />
-                <div className="flex justify-between text-xs text-gh-fg-subtle dark:text-ghd-fg-subtle">
-                  <span>0.5x</span>
-                  <span>1.0x</span>
-                  <span>2.0x</span>
-                </div>
-              </label>
 
-              {/* Pitch Slider */}
-              <label className="grid gap-3">
+                <div className="flex justify-between items-center text-[10px] font-mono text-fg-faint">
+                  <button
+                    type="button"
+                    onClick={() => setRate(0.75)}
+                    className="hover:text-fg transition-colors"
+                  >
+                    0.75x
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRate(1.0)}
+                    className={`hover:text-fg transition-colors ${rate === 1.0 ? 'text-accent font-semibold' : ''}`}
+                  >
+                    1.0x (Normal)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRate(1.5)}
+                    className="hover:text-fg transition-colors"
+                  >
+                    1.5x
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRate(2.0)}
+                    className="hover:text-fg transition-colors"
+                  >
+                    2.0x
+                  </button>
+                </div>
+              </div>
+
+              {/* Pitch */}
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gh-fg dark:text-ghd-fg">Pitch</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[12px] font-medium text-fg uppercase tracking-wider font-mono">
+                      Pitch Modulation
+                    </span>
+                  </div>
+                  <span className="badge badge--chip font-mono text-[11px] text-fg">
                     {pitch.toFixed(1)}
                   </span>
                 </div>
+
                 <input
                   type="range"
-                  min={0}
-                  max={2}
+                  min={0.0}
+                  max={2.0}
                   step={0.1}
                   value={pitch}
                   onChange={(e) => setPitch(Number(e.target.value))}
                   disabled={!synthAvailable}
+                  aria-label="Speech pitch"
                 />
-                <div className="flex justify-between text-xs text-gh-fg-subtle dark:text-ghd-fg-subtle">
-                  <span>Low</span>
-                  <span>Normal</span>
-                  <span>High</span>
+
+                <div className="flex justify-between items-center text-[10px] font-mono text-fg-faint">
+                  <button
+                    type="button"
+                    onClick={() => setPitch(0.5)}
+                    className="hover:text-fg transition-colors"
+                  >
+                    0.5 (Low)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPitch(1.0)}
+                    className={`hover:text-fg transition-colors ${pitch === 1.0 ? 'text-accent font-semibold' : ''}`}
+                  >
+                    1.0 (Natural)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPitch(1.5)}
+                    className="hover:text-fg transition-colors"
+                  >
+                    1.5 (High)
+                  </button>
                 </div>
-              </label>
+              </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-gh-border-subtle dark:border-ghd-border-muted bg-gh-canvas-subtle dark:bg-ghd-canvas mt-auto">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gh-fg-muted dark:text-ghd-fg-muted">
-            <p>Built with React & Web Speech API</p>
-            <div className="flex items-center gap-4">
-              <a
-                href="https://github.com/innovatorved/browser-tts"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gh-accent dark:hover:text-ghd-accent transition-colors"
-              >
-                View Source
-              </a>
-              <span className="text-gh-border dark:text-ghd-border">•</span>
-              <a
-                href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gh-accent dark:hover:text-ghd-accent transition-colors"
-              >
-                MDN Docs
-              </a>
-            </div>
+      {/* ── Footer ────────────────────────────────────────────── */}
+      <footer className="border-t border-border bg-bg-alt/50 mt-auto py-5">
+        <div className="max-w-[860px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-fg-muted font-mono">
+          <div className="flex items-center gap-2">
+            <span>Browser TTS Engine</span>
+            <span>•</span>
+            <span className="text-fg-faint">Client-side & zero telemetry</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <a
+              href="https://github.com/innovatorved/browser-tts"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-accent transition-colors"
+            >
+              GitHub Source
+            </a>
+            <span className="text-border-strong">•</span>
+            <a
+              href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-accent transition-colors"
+            >
+              MDN Docs
+            </a>
           </div>
         </div>
       </footer>
